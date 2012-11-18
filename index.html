@@ -1,58 +1,96 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-<script src="./client.js"></script>
 <script>
-	var socket = io.connect('http://localhost:3003');
+  var socket = io.connect('http://localhost:3003');
 
-	socket.on('connect', function(){
-		socket.emit('adduser', prompt("What's your name?"));
-	});
+  socket.on('connect', function(){
+    socket.emit('adduser', prompt("What's your name?"));
+  });
 
-	socket.on('updatechat', function (username, data) {
-		$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
-        if(username == 'ERROR')
-          socket.emit('adduser', prompt("What's your name?"));
-	});
+  socket.on('showusers', function(usernames){
+    $('#private_chat_wrapper ul').html("");
+    $.each(usernames, function(key, value) {
+      $('#private_chat_wrapper ul').append('<li> <a href="#">' + value + '</a></li>');
+    });
+  });
 
-	socket.on('updaterooms', function(rooms, current_room) {
-		$('#rooms').empty();
-		$.each(rooms, function(key, value) {
-			if(value == current_room){
-				$('#rooms').append('<div>' + value + '</div>');
-			}
-			else {
-				$('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
-			}
-		});
-	});
+  socket.on('updateprivatechat', function (username, data) {
+    $('#private_conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+  });
 
-	function switchRoom(room){
-		socket.emit('switchRoom', room);
-	}
-	
-	$(function(){
+  socket.on('updatechat', function (username, data) {
+    $('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+    if(username == 'ERROR')
+      socket.emit('adduser', prompt("What's your name?"));
+  });
 
-		$('#datasend').click( function() {
-			var message = $('#data').val();
-			$('#data').val('');
-			socket.emit('sendchat', message);
-		});
+  socket.on('updaterooms', function(rooms, current_room) {
+    $('#rooms').empty();
+    $.each(rooms, function(key, value) {
+      if(value == current_room){
+        $('#rooms').append('<div>' + value + '</div>');
+      }
+      else {
+        $('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
+      }
+    });
+  });
 
-		$('#data').keypress(function(e) {
-			if(e.which == 13) {
-				$(this).blur();
-				$('#datasend').focus().click();
-			}
-		});
-	});
+  function switchRoom(room){
+    socket.emit('switchRoom', room);
+  }
+
+  $(function(){
+
+    $('#datasend').click( function() {
+      var message = $('#data').val();
+      $('#data').val('');
+      socket.emit('sendchat', message);
+    });
+
+    $('#private_datasend').click( function() {
+      var message = $('#private_data').val();
+      var username = $('#private_chat_wrapper li.active:first a').text();
+      $('#private_chat_wrapper ul').html('');
+      $('#private_data').val('');
+      socket.emit('sendprivatechat', {username: username, message: message});
+    });
+
+    $('#private_chat_trigger').click(function(e) {
+      socket.emit('getusers');
+    });
+
+
+    $('#private_chat_wrapper a').live('click', function(e) {
+      $(this).parent().addClass('active');
+    });
+
+    $('#data').keypress(function(e) {
+      if(e.which == 13) {
+        $(this).blur();
+        $('#datasend').focus().click();
+      }
+    });
+  });
 
 </script>
 <div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
-	<b>ROOMS</b>
-	<div id="rooms"></div>
+  <b>ROOMS</b>
+  <div id="rooms"></div>
 </div>
 <div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
-	<div id="conversation"></div>
-	<input id="data" style="width:200px;" />
-	<input type="button" id="datasend" value="send" />
+  <div id="conversation"></div>
+  <input id="data" style="width:200px;" />
+  <input type="button" id="datasend" value="send" />
 </div>
+<a href='#' id='private_chat_trigger'>Private Chat</a>
+<div id='private_chat_wrapper'>
+  <ul>
+  </ul>
+  <div id='private_chat'>
+    <div id="private_conversation"></div>
+    <input id="private_data" style="width:200px;" />
+    <input type="button" id="private_datasend" value="send" />
+  </div>
+</div>
+
