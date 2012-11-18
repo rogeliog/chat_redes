@@ -14,17 +14,21 @@
 
   usernames = {};
 
-  rooms = ['room1', 'room2'];
+  rooms = ['Redes 2', 'Algoritmos'];
 
   io.sockets.on('connection', function(socket) {
     socket.on('adduser', function(username) {
       socket.username = username;
       socket.room = 'room1';
-      usernames[username] = username;
-      socket.join('room1');
-      socket.emit('updatechat', 'SERVER', 'you have connected to room1');
-      socket.broadcast.to('room1').emit('updatechat', 'SERVER', username + ' has connected to this room');
-      return socket.emit('updaterooms', rooms, 'room1');
+      if (usernames[username] != null) {
+        return socket.emit('updatechat', 'ERROR', "Username " + username + " has already been taken");
+      } else {
+        usernames[username] = username;
+        socket.join('room1');
+        socket.emit('updatechat', 'SERVER', 'you have connected to room1');
+        socket.broadcast.to('room1').emit('updatechat', 'SERVER', username + ' has connected to this room');
+        return socket.emit('updaterooms', rooms, 'room1');
+      }
     });
     socket.on('sendchat', function(data) {
       return io.sockets["in"](socket.room).emit('updatechat', socket.username, data);

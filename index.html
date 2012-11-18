@@ -10,6 +10,8 @@
 
 	socket.on('updatechat', function (username, data) {
 		$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+        if(username == 'ERROR')
+          socket.emit('adduser', prompt("What's your name?"));
 	});
 
 	socket.on('updaterooms', function(rooms, current_room) {
@@ -42,7 +44,6 @@
 				$('#datasend').focus().click();
 			}
 		});
-		socket.emit('adduser', prompt("What's your name?"));
 	});
 
 </script>
