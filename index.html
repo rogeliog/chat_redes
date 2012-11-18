@@ -15,7 +15,9 @@
   });
 
   socket.on('updateprivatechat', function (username, data) {
-    $('#private_conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+    if(socket.private_chat_user == null) 
+      socket.private_chat_user = username;
+    $("#private_conversation").append('<b>'+username + ':</b> ' + data + '<br>');
   });
 
   socket.on('updatechat', function (username, data) {
@@ -50,10 +52,11 @@
 
     $('#private_datasend').click( function() {
       var message = $('#private_data').val();
-      var username = $('#private_chat_wrapper li.active:first a').text();
-      $('#private_chat_wrapper ul').html('');
+      if(socket.private_chat_user == null) 
+        socket.private_chat_user = $('#private_chat_wrapper li.active:first a').text();
+      $('#private_chat_wrapper ul').html(socket.private_chat_user);
       $('#private_data').val('');
-      socket.emit('sendprivatechat', {username: username, message: message});
+      socket.emit('sendprivatechat', {username: socket.private_chat_user, message: message});
     });
 
     $('#private_chat_trigger').click(function(e) {
