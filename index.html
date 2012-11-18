@@ -1,99 +1,33 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-<script>
-  var socket = io.connect('http://localhost:3003');
-
-  socket.on('connect', function(){
-    socket.emit('adduser', prompt("What's your name?"));
-  });
-
-  socket.on('showusers', function(usernames){
-    $('#private_chat_wrapper ul').html("");
-    $.each(usernames, function(key, value) {
-      $('#private_chat_wrapper ul').append('<li> <a href="#">' + value + '</a></li>');
-    });
-  });
-
-  socket.on('updateprivatechat', function (username, data) {
-    if(socket.private_chat_user == null) 
-      socket.private_chat_user = username;
-    $("#private_conversation").append('<b>'+username + ':</b> ' + data + '<br>');
-  });
-
-  socket.on('updatechat', function (username, data) {
-    $('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
-    if(username == 'ERROR')
-      socket.emit('adduser', prompt("What's your name?"));
-  });
-
-  socket.on('updaterooms', function(rooms, current_room) {
-    $('#rooms').empty();
-    $.each(rooms, function(key, value) {
-      if(value == current_room){
-        $('#rooms').append('<div>' + value + '</div>');
-      }
-      else {
-        $('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
-      }
-    });
-  });
-
-  function switchRoom(room){
-    socket.emit('switchRoom', room);
-  }
-
-  $(function(){
-
-    $('#datasend').click( function() {
-      var message = $('#data').val();
-      $('#data').val('');
-      socket.emit('sendchat', message);
-    });
-
-    $('#private_datasend').click( function() {
-      var message = $('#private_data').val();
-      if(socket.private_chat_user == null) 
-        socket.private_chat_user = $('#private_chat_wrapper li.active:first a').text();
-      $('#private_chat_wrapper ul').html(socket.private_chat_user);
-      $('#private_data').val('');
-      socket.emit('sendprivatechat', {username: socket.private_chat_user, message: message});
-    });
-
-    $('#private_chat_trigger').click(function(e) {
-      socket.emit('getusers');
-    });
+<script src="js/client.js"></script>
+<link rel="stylesheet" type="text/css" href="css/style.css" />
 
 
-    $('#private_chat_wrapper a').live('click', function(e) {
-      $(this).parent().addClass('active');
-    });
-
-    $('#data').keypress(function(e) {
-      if(e.which == 13) {
-        $(this).blur();
-        $('#datasend').focus().click();
-      }
-    });
-  });
-
-</script>
-<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+<div id="container">
   <b>ROOMS</b>
   <div id="rooms"></div>
 </div>
-<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+
+<div class='chat'>
+  <b>Main Chat</b>
   <div id="conversation"></div>
-  <input id="data" style="width:200px;" />
+  <input class='data' id="data" />
   <input type="button" id="datasend" value="send" />
 </div>
-<a href='#' id='private_chat_trigger'>Private Chat</a>
+
+
 <div id='private_chat_wrapper'>
-  <ul>
-  </ul>
-  <div id='private_chat'>
+  <div id='private_chat' class='chat'>
+
+    <b>Private Chat</b>
+    <a href='#' id='private_chat_trigger'>View online users</a>
+    <ul>
+    </ul>
+
     <div id="private_conversation"></div>
-    <input id="private_data" style="width:200px;" />
+    <input class='data' id="private_data" />
     <input type="button" id="private_datasend" value="send" />
   </div>
-</div>
 
+</div>
