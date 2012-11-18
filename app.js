@@ -12,7 +12,7 @@ app.get('/', function (req, res) {
 var usernames = {};
 
 // rooms which are currently available in chat
-var rooms = ['room1','room2','room3'];
+var rooms = ['room1','room2'];
 
 io.sockets.on('connection', function (socket) {
 	
@@ -23,6 +23,7 @@ io.sockets.on('connection', function (socket) {
 		// store the room name in the socket session for this client
 		socket.room = 'room1';
 		// add the client's username to the global list
+        
 		usernames[username] = username;
 		// send client to room 1
 		socket.join('room1');
