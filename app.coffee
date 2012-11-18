@@ -9,6 +9,7 @@ app.listen(3003)
 app.get '/', (req, res) ->
   res.sendfile(__dirname + '/index.html')
 
+timeouts = {}
 usernames = {}
 user_sockets = {}
 
@@ -16,8 +17,18 @@ rooms = ['Redes 2','Algoritmos']
 
 io.sockets.on 'connection', (socket) ->
 	
+  setInterval ->
+    now = new Date()
+    console.log socket.username
+    if timeouts != {}
+      if (now.getTime() - timeouts[socket.username].getTime()) > 120000
+        socket.disconnect()
+        console.log "Se desconecta"
+  , 121000
+
   socket.on 'adduser', (username) ->
     socket.username = username
+    timeouts[socket.username] = new Date()
     user_sockets[username] = socket
     socket.room = 'room1'
     if usernames[username]?
@@ -30,9 +41,11 @@ io.sockets.on 'connection', (socket) ->
       socket.emit('updaterooms', rooms, 'room1')
 
   socket.on 'sendchat', (data) ->
+    timeouts[socket.username] = new Date()
     io.sockets.in(socket.room).emit('updatechat', socket.username, data)
   
   socket.on 'switchRoom', (newroom) ->
+    timeouts[socket.username] = new Date()
     socket.leave(socket.room)
     socket.join(newroom)
     socket.emit('updatechat', 'SERVER', 'you have connected to '+ newroom)
@@ -49,9 +62,10 @@ io.sockets.on 'connection', (socket) ->
     socket.leave(socket.room)
 
   socket.on 'getusers', (data) ->
-    console.log usernames
+    timeouts[socket.username] = new Date()
     socket.emit 'showusers', usernames
 
   socket.on 'sendprivatechat', (data) ->
+    timeouts[socket.username] = new Date()
     user_sockets[socket.username].emit('updateprivatechat', socket.username, data.message)
     user_sockets[data.username].emit('updateprivatechat', socket.username, data.message)

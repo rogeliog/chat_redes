@@ -26,9 +26,9 @@ socket.on 'updaterooms', (rooms, current_room) ->
     if(value == current_room)
       $('#rooms').append("<div>#{value}</div>")
     else
-      $('#rooms').append("<div><a href='#' onclick='switchRoom(#{value})'>#{value}</a></div>")
+      $('#rooms').append("<div><a href='#' onclick='switchRoom(\'#{value}\')'>#{value}</a></div>")
 
-switchRoom: (room)->
+switchRoom = (room) ->
   socket.emit('switchRoom', room)
 
 $ ->
