@@ -1,4 +1,6 @@
-socket = io.connect('http://localhost:3003')
+socket = io.connect 'http://localhost:3003', {'connect timeout': 1000}
+
+
 
 socket.on 'connect', ->
   socket.emit('adduser', prompt("What's your name?"))
